@@ -2,6 +2,8 @@
 #include <iomanip>
 #include <fstream>
 #include <typeinfo>
+#include <cstdlib>
+#include <string.h>
 
 using namespace std;
 
@@ -22,7 +24,7 @@ void StudentsSortUp(Student *, int);
 void StudentsSortDown(Student *, int);
 void AllInformation(Student *, int);
 void ChangeInformation(Student *, int);
-void DeleteInforamtion(Student *, int);
+void DeleteInforamtion(Student *, int &);
 void MainSortOfStudent(Student *, int);
 void NameSortUp(Student *, int);
 void NameSortDown(Student *, int);
@@ -34,12 +36,16 @@ void GroupSortUp(Student *, int);
 void GroupSortDown(Student *, int);
 void GroupSortMain(Student *, int);
 void WriteToFile(Student *, int);
+void ReadData(Student *, int &);
+void WriteToFileBin(Student *, int);
+char *UserInputText();
+void ReadDataBin(Student *, int &);
 
 int main()
 {
     int n = 0, g = 0;
-    Student *smf = new Student[5];
-    int punkti = 8, variant = 0;
+    Student *smf = new Student[100];
+    int punkti = 11, variant = 0;
     while (variant != punkti)
     {
         PrintMenu();
@@ -75,6 +81,18 @@ int main()
         case 7:
             system("cls");
             WriteToFile(smf, g);
+            break;
+        case 8:
+            system("cls");
+            ReadData(smf, g);
+            break;
+        case 9:
+            system("cls");
+            WriteToFileBin(smf, g);
+            break;
+        case 10:
+            system("cls");
+            ReadDataBin(smf, g);
             break;
         default:
             break;
@@ -120,23 +138,29 @@ void PrintMenu()
     cout << "5. Sort." << endl;
     cout << "6. Delete information." << endl;
     cout << "7. Write Information into file(text)." << endl;
-    cout << "8. Exit." << endl;
+    cout << "8. Read data(text version)." << endl;
+    cout << "9. Write Information into file(bin)." << endl;
+    cout << "10. Read data(bin version)." << endl;
+    cout << "11. Exit." << endl;
     cout << "> ";
 }
 
 void AddStudent(Student *massive, int &z, int &a)
 {
-    int tt = z;
+    int tt = z, h = 0;
     cout << "Enter name of Student: ";
-    cin >> massive[tt].name;
+    massive[tt].name = UserInputText();
     cout << "Enter surname of Student: ";
-    cin >> massive[tt].surname;
+    massive[tt].surname  = UserInputText();
     cout << "Enter year of birth of Student: ";
-    cin >> massive[tt].yearOfBirth;
+    cin >> h;
+    massive[tt].yearOfBirth = h;
     cout << "Enter year of Enrollment of Student: ";
-    cin >> massive[tt].yearOfEnrollment;
+    cin >> h;
+    massive[tt].yearOfEnrollment = h;
     cout << "Enter year of course of Student: ";
-    cin >> massive[tt].kurs;
+    cin >> h;
+    massive[tt].kurs = h;
     cout << "Enter group of Student: ";
     cin >> massive[tt].group;
     z++;
@@ -229,10 +253,10 @@ void ChangeInformation(Student *massive, int z)
         switch(y)
         {
         case 1:
-            cin >> massive[t - 1].name;
+            massive[t - 1].name = UserInputText();
             break;
         case 2:
-            cin >> massive[t - 1].surname;
+            massive[t - 1].surname = UserInputText();
             break;
         case 3:
             cin >> massive[t - 1].yearOfBirth;
@@ -259,14 +283,14 @@ void ChangeInformation(Student *massive, int z)
     }
 }
 
-void DeleteInforamtion(Student *massive, int z)
+void DeleteInforamtion(Student *massive, int &z)
 {
     system("cls");
     int t = 0, y = 0;
     AllInformation(massive, z);
-    cout << "What do you want to delete?";
+    cout << "What do you want to delete?\n> ";
     cin >> t;
-    for(int i = t - 1; i < z - 1; i++)
+    for(int i = t - 1; i < z; i++)
     {
         massive[i].name = massive[i + 1].name;
         massive[i].surname = massive[i + 1].surname;
@@ -274,8 +298,8 @@ void DeleteInforamtion(Student *massive, int z)
         massive[i].yearOfEnrollment = massive[i + 1].yearOfEnrollment;
         massive[i].kurs = massive[i + 1].kurs;
         massive[i].group = massive[i + 1].group;
-        z--;
     }
+    if(t <= z) z--;
 }
 
 void MainSortOfStudent(Student *massive, int z)
@@ -495,10 +519,92 @@ void WriteToFile(Student *massive, int z)
     {
         for(int i = 0; i < z; i++)
         {
-            someFile << massive[i].name << " " << massive[i].surname << " " << massive[i].yearOfBirth << " " << massive[i].yearOfEnrollment << " " << massive[i].kurs << " " << massive[i].group << "\n";
+            someFile << massive[i].name << " " << massive[i].surname << " " << massive[i].yearOfBirth << " " << massive[i].yearOfEnrollment << " " << massive[i].kurs << " " << massive[i].group;
+            if(i + 1 == z) someFile << "\n";
+            else someFile << "\n ";
         }
         cout << "Success!" << endl;
     }
     someFile.close();
 }
 
+void ReadData(Student *massive, int &z)
+{
+    ifstream someFile;
+    someFile.open("test.TXT");
+    int n = 0;
+    z = 0;
+    if(someFile.is_open())
+    {
+        while(!someFile.eof())
+        {
+            char what[15];
+            someFile.getline(massive[n].name, 255, ' ');
+            someFile.getline(massive[n].surname, 255, ' ');
+            someFile.getline(what, 255, ' ');
+            massive[n].yearOfBirth = atoi(what);
+            someFile.getline(what, 255, ' ');
+            massive[n].yearOfEnrollment = atoi(what);
+            someFile.getline(what, 255, ' ');
+            massive[n].kurs = atoi(what);
+            someFile.getline(massive[n].group, 255, ' ');
+            massive[n].group[strlen(massive[n].group) - 1] = ' ';
+            n++;
+            z++;
+        }
+    }
+    cout << "Done!\n";
+    someFile.close();
+}
+
+void WriteToFileBin(Student *massive, int z)
+{
+    ReadData(massive, z);
+    system("cls");
+    ofstream out("testBin.bin", ios::out|ios::binary);
+    int n = 0;
+    out.write((char *)&massive, sizeof(massive));
+    out.close();
+}
+
+void ReadDataBin(Student *massive, int &z)
+{
+    ReadData(massive, z);
+    WriteToFileBin(massive, z);
+    ifstream someFile;
+    someFile.open("testBin.bin", ios::binary);
+    int n = 0;
+    Student *s = new Student[100];
+    if(someFile.is_open())
+    {
+        someFile.read((char *)&s, sizeof(s));
+    }
+    for(int i = 0; i < z; i++)
+    {
+        massive[i] = s[i];
+    }
+    cout << "Done!\n";
+    someFile.close();
+}
+
+char *UserInputText()
+{
+    char *possibleSimbol = new char[15];
+    possibleSimbol = "123456789;:'/?.>,<!@#$%^&*)(";
+    char *smf = new char[15];
+    bool flg = false;
+    cin >> smf;
+    for(int i = 0; i < strlen(smf); i++)
+    {
+        for(int j = 0; j < strlen(possibleSimbol); j++)
+        {
+            if(smf[i] == possibleSimbol[j]) flg = true;
+        }
+    }
+    if(!flg) return smf;
+    else
+    {
+        cout << "Incorrect value!\nPlease, enter again\n> ";
+        UserInputText();
+    }
+}
